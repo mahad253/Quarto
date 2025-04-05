@@ -2,22 +2,16 @@ from .player import Player
 
 
 class Human(Player):
-    '''
-    classdocs
-    '''
 
     def __init__(self, name):
-        '''
-        Constructor
-        '''
+
         self.__name__ = name
 
     def select(self, game, row, col):
-        '''
-        '''
+
         selected_piece = None
 
-        if game.pick:  # when it's time to pick a piece from the storage board.
+        if game.pick:
             if game.storage_board.get_piece(row, col) != 0:
                 game.selected_piece = game.storage_board.get_piece(row, col)
                 print("HUMAN GAME SELECTED PIECE", game.selected_piece)

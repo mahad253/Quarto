@@ -1,8 +1,8 @@
 import pygame
 import os
-import math  # Pour l'effet de flottement
+import math
 import subprocess
-import sys  # Permet de quitter proprement le programme
+import sys
 
 # Initialisation de Pygame
 pygame.init()
@@ -11,8 +11,8 @@ pygame.init()
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
-HOVER_COLOR = (255, 140, 0)  # Orange pour le hover
-TITLE_COLOR = (255, 69, 0)  # Rouge/orange inspiré du fond
+HOVER_COLOR = (255, 140, 0)
+TITLE_COLOR = (255, 69, 0)
 
 # Dimensions de la fenêtre
 WIDTH, HEIGHT = 1080, 720
@@ -23,8 +23,6 @@ pygame.display.set_caption("Quarto")
 background = pygame.image.load('assets/fonts/bg.jpg')
 flag_fr = pygame.image.load('assets/images/france.png')
 flag_es = pygame.image.load('assets/images/spain.png')
-
-# Redimensionner les images des drapeaux
 flag_fr = pygame.transform.scale(flag_fr, (50, 30))
 flag_es = pygame.transform.scale(flag_es, (50, 30))
 
@@ -32,7 +30,7 @@ flag_es = pygame.transform.scale(flag_es, (50, 30))
 flag_fr_rect = flag_fr.get_rect(topleft=(20, 20))
 flag_es_rect = flag_es.get_rect(topleft=(80, 20))
 
-# Définition des textes selon la langue
+# Textes selon la langue
 languages = {
     "fr": {
         "start": "Lancer une partie",
@@ -45,45 +43,41 @@ languages = {
         "report": "Informe del proyecto"
     }
 }
+current_language = "fr"
 
-current_language = "fr"  # Langue par défaut
-
-# Police d'écriture
+# Polices
 font = pygame.font.Font(None, 40)
-title_font = pygame.font.Font(None, 100)  # Plus grand pour le titre
+title_font = pygame.font.Font(None, 100)
 
-# Fonction pour créer un bouton avec hover
+# Fonction pour dessiner un bouton
 def draw_button(text, x, y, is_hovered):
     button_rect = pygame.Rect(x, y, 300, 50)
-    color = HOVER_COLOR if is_hovered else GRAY  # Change la couleur si hover
+    color = HOVER_COLOR if is_hovered else GRAY
     pygame.draw.rect(screen, color, button_rect, border_radius=10)
     text_surf = font.render(text, True, BLACK)
     text_rect = text_surf.get_rect(center=button_rect.center)
     screen.blit(text_surf, text_rect)
     return button_rect
 
+# Animation
 running = True
-time_counter = 0  # Compteur de temps pour l'effet flottant
+time_counter = 0
 
 while running:
     screen.blit(background, (0, 0))
 
-    # Effet de flottement (mouvement haut-bas)
-    title_y = 100 + math.sin(time_counter * 0.05) * 10  # Le texte monte et descend doucement
-
-    # Affichage du titre flottant
+    # Titre flottant
+    title_y = 100 + math.sin(time_counter * 0.05) * 10
     title_surf = title_font.render("QUARTO", True, TITLE_COLOR)
     title_rect = title_surf.get_rect(center=(WIDTH // 2, title_y))
     screen.blit(title_surf, title_rect)
 
-    # Récupération de la position de la souris
     mouse_pos = pygame.mouse.get_pos()
 
-    # Vérifier si la souris est sur un drapeau
+    # Drapeaux
     is_hover_fr = flag_fr_rect.collidepoint(mouse_pos)
     is_hover_es = flag_es_rect.collidepoint(mouse_pos)
 
-    # Affichage des drapeaux avec contour noir si sélectionné ou hover
     if current_language == "fr" or is_hover_fr:
         pygame.draw.rect(screen, BLACK, flag_fr_rect.inflate(6, 6), border_radius=5)
     screen.blit(flag_fr, flag_fr_rect.topleft)
@@ -92,14 +86,13 @@ while running:
         pygame.draw.rect(screen, BLACK, flag_es_rect.inflate(6, 6), border_radius=5)
     screen.blit(flag_es, flag_es_rect.topleft)
 
-    # Dessiner les boutons avec hover
-    start_button = draw_button(languages[current_language]["start"], 390, 300, start_button.collidepoint(mouse_pos) if 'start_button' in locals() else False)
-    rules_button = draw_button(languages[current_language]["rules"], 390, 370, rules_button.collidepoint(mouse_pos) if 'rules_button' in locals() else False)
-    report_button = draw_button(languages[current_language]["report"], 390, 440, report_button.collidepoint(mouse_pos) if 'report_button' in locals() else False)
+    # Boutons
+    start_button = draw_button(languages[current_language]["start"], 390, 300, pygame.Rect(390, 300, 300, 50).collidepoint(mouse_pos))
+    rules_button = draw_button(languages[current_language]["rules"], 390, 370, pygame.Rect(390, 370, 300, 50).collidepoint(mouse_pos))
+    report_button = draw_button(languages[current_language]["report"], 390, 440, pygame.Rect(390, 440, 300, 50).collidepoint(mouse_pos))
 
     pygame.display.flip()
-
-    time_counter += 1  # Incrémentation du compteur pour l'animation
+    time_counter += 1
 
     # Gestion des événements
     for event in pygame.event.get():
@@ -109,7 +102,6 @@ while running:
             print("Fermeture de Quarto")
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Vérifier si un drapeau est cliqué
             if flag_fr_rect.collidepoint(event.pos):
                 current_language = "fr"
                 print("Langue changée en Français")
@@ -117,13 +109,17 @@ while running:
                 current_language = "es"
                 print("Langue changée en Espagnol")
 
-            # Vérifier si un bouton est cliqué
             if start_button.collidepoint(event.pos):
                 print("Lancement de la partie...")
-                pygame.quit()  # Fermer la fenêtre du menu
-                subprocess.run(["python", os.path.join(os.path.dirname(__file__), "choix.py")])  # Ouvrir party.py
-                sys.exit()  # Quitter proprement
+                pygame.quit()
+                subprocess.run(["python", os.path.join(os.path.dirname(__file__), "choix.py")])
+                sys.exit()
+
             elif rules_button.collidepoint(event.pos):
-                print("Afficher les règles")
+                print("Affichage des règles du jeu...")
+                import rules
+                rules.rules_loop(current_language)
+
             elif report_button.collidepoint(event.pos):
-                print("Afficher le rapport du projet")
+                print("Affichage du rapport du projet...")
+                # Tu pourras ajouter ici ton système de lecture PDF ou HTML

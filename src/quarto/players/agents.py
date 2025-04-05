@@ -7,23 +7,17 @@ from .utils import get_not_losing_moves, get_winning_moves, get_coor_selected_pi
 
 
 class AI_level1(Player):
-    '''
-    classdocs
-    '''
 
     def __init__(self, name):
-        '''
-        Constructor
-        '''
+
         self.__name__ = name
 
     def select(self, game, row, col):
-        '''
-        '''
+
         selected_piece = None
 
         if game.pick:
-            #  At this point, we have to pick a piece from the storage board
+
             while True:
                 rand_row = randint(0, SROWS - 1)
                 rand_col = randint(0, SCOLS - 1)
@@ -46,15 +40,9 @@ class AI_level1(Player):
 
 
 class AI_level2(Player):
-    '''
-    This AI uses a very naive algorithm that allows it to verify if the piece that was given to it can allow it to win,
-    and which won't pick a piece if it allows the opponent to immediately win (unless there is no other choice).
-    '''
 
     def __init__(self, name):
-        '''
-        Constructor
-        '''
+
         self.__name__ = name
 
     def select(self, game, row, col):
@@ -65,10 +53,10 @@ class AI_level2(Player):
         not_losing_moves = []
 
         if game.pick:
-            #  At this point, we have to pick a piece from the storage board
+
             not_losing_moves = get_not_losing_moves(game)
             if not not_losing_moves:
-                print("Oh no...")
+                print("À revoir ...")
 
             while True:
                 rand_move = get_random_move(game) if not not_losing_moves else not_losing_moves[0]  # not random
@@ -99,8 +87,7 @@ class AI_level2(Player):
 
 
 def get_random_move(game, verbose=False):
-    '''Returns a random move
-    '''
+
     if game.pick:
         move = game.storage_board.get_valid_moves()[randint(0, len(game.storage_board.get_valid_moves()) - 1)]
     else:
@@ -111,14 +98,10 @@ def get_random_move(game, verbose=False):
 
 
 class AI_level3(Player):
-    '''
-    This AI uses the minmax algorithm.
-    '''
+
 
     def __init__(self, name):
-        '''
-        Constructor
-        '''
+
         self.__name__ = name
 
         # (depth, nb of turns left)
@@ -128,10 +111,6 @@ class AI_level3(Player):
         self.DEPTH_4_UNTIL = (4, 0)
 
     def select(self, game, row, col):
-        '''
-        This select method is a bit different from the past ones as we don't give control back to the game after the
-        piece is placed, we do the placing and the picking at once
-        '''
 
         self.update_depth(game)
 
@@ -164,9 +143,7 @@ class AI_level3(Player):
         return True
 
     def update_depth(self, game):
-        '''
-        Updates the depth attribute depending on how far into the game we are.
-        '''
+
         nb_turns = len(game.game_board.get_valid_moves())
 
         print("nb_turns =", nb_turns)

@@ -5,9 +5,9 @@ from .types import Shape, Size, Hole, Coloration
 
 class Piece:
 
-    PADDING = 15  # space between the border of a cell and the piece
-    OUTLINE = 2  # outline of the piece
-    INNER_PADDING = 3  # space between the hole of the piece (if there is one) and the border of the piece
+    PADDING = 15
+    OUTLINE = 2
+    INNER_PADDING = 3
 
     def __init__(self, row, col, coloration, shape, size, hole):
 
@@ -21,7 +21,7 @@ class Piece:
 
         self.x = 0
         self.y = 0
-        self.calc_pos(True)  # initializes the (x,y) position of the piece on the board
+        self.calc_pos(True)
 
     def calc_pos(self, init=False):
 
@@ -41,13 +41,13 @@ class Piece:
 
         radius = SQUARE_SIZE // 2 - self.PADDING
         if(self.size == Size.LITTLE):
-            radius -= radius // 3  # if this piece is tall, then its original size is decreased by 33%
-        if(self.shape == Shape.CIRCLE):  # for the shapes
-            pg.draw.circle(win, DBROWN, (self.x, self.y), radius + self.OUTLINE)  # the outline
-            pg.draw.circle(win, self.coloration.value, (self.x, self.y), radius)  # includes the coloration
-            if(self.hole == Hole.WITH):  # for the hole
+            radius -= radius // 3
+        if(self.shape == Shape.CIRCLE):
+            pg.draw.circle(win, DBROWN, (self.x, self.y), radius + self.OUTLINE)
+            pg.draw.circle(win, self.coloration.value, (self.x, self.y), radius)
+            if(self.hole == Hole.WITH):
                 pg.draw.circle(win, DBROWN, (self.x, self.y), int(radius * 0.8))  # TODO: tweak the colors
-        else:  # if it's not a circle
+        else:
             rect = (self.x - radius, self.y - radius, radius * 2, radius * 2)
             rect_outline = (self.x - (radius + self.OUTLINE), self.y - (radius + self.OUTLINE),
                             (radius + self.OUTLINE) * 2, (radius + self.OUTLINE) * 2)

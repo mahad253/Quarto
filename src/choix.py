@@ -99,7 +99,7 @@ while running:
         elif event.type == pg.MOUSEBUTTONDOWN:
             if btn_pvp.is_clicked(event.pos):
                 pg.quit()
-                subprocess.run(["python", os.path.join(os.path.dirname(__file__), "jeu.py")])
+                subprocess.run(["python", os.path.join(os.path.dirname(__file__), "jeu.py"), "PVP"])
                 sys.exit()
 
             elif btn_pvai.is_clicked(event.pos):

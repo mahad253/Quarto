@@ -1,5 +1,6 @@
 import pygame as pg
 import os
+import sys
 from .players.agents import AI_level1, AI_level2, AI_level3
 from .players.human import Human
 from .board import Board
@@ -14,13 +15,13 @@ from .constants import (
 )
 
 class Game:
-    def __init__(self, win, font):
+    def __init__(self, win, font, ia_level=None):
+        self.ia_level = ia_level  # "Niveau 1", "Niveau 2", "Minimax" ou None
         self.__init_game()
         self.win = win
         self.font = font
-        self.large_font = pg.font.Font(None, 60)  # Texte principal en haut
+        self.large_font = pg.font.Font(None, 60)
 
-        # Chargement des avatars
         self.avatar1 = pg.transform.scale(pg.image.load(os.path.join("assets", "images", "user.png")), (60, 60))
         self.avatar2 = pg.transform.scale(pg.image.load(os.path.join("assets", "images", "user.png")), (60, 60))
 
@@ -36,10 +37,19 @@ class Game:
         self.game_board = Board("Plateau", False, GROWS, GCOLS, GXOFFSET, GYOFFSET, BOARDOUTLINE, LGREEN, GREEN)
         self.storage_board = Board("Réserve", True, SROWS, SCOLS, SXOFFSET, SYOFFSET, BOARDOUTLINE, LGREEN, GREEN)
         self.turn = True
-        self.player1 = Human(PLAYER1)
-        self.player2 = Human(PLAYER2)
         self.pick = True
         self.valid_moves = []
+
+        self.player1 = Human("Joueur 1")
+
+        if self.ia_level == "Niveau 1":
+            self.player2 = AI_level1("IA - Niveau 1")
+        elif self.ia_level == "Niveau 2":
+            self.player2 = AI_level2("IA - Niveau 2")
+        elif self.ia_level == "Minimax":
+            self.player2 = AI_level3("IA - Minimax")
+        else:
+            self.player2 = Human("Joueur 2")
 
     def reset(self):
         print("La partie est réinitialisée.")
@@ -81,21 +91,18 @@ class Game:
         else:
             txt = f"{self.__get_player1() if self.turn else self.__get_player2()}, {'choisis une' if self.pick else 'pose la'} pièce !"
 
-        text_surface = self.large_font.render(txt, True, (255, 255, 255))  # blanc
+        text_surface = self.large_font.render(txt, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=(self.win.get_width() // 2, 40))
         self.win.blit(text_surface, text_rect)
 
     def __draw_reset_button(self):
-        # Bordure du bouton
         rect_outline = pg.Rect(RESET_X - BOARDOUTLINE, RESET_Y - BOARDOUTLINE,
                                RESET_WIDTH + 2 * BOARDOUTLINE, RESET_HEIGHT + 2 * BOARDOUTLINE)
         pg.draw.rect(self.win, DBROWN, rect_outline)
 
-        # Bouton
         rect = pg.Rect(RESET_X, RESET_Y, RESET_WIDTH, RESET_HEIGHT)
         pg.draw.rect(self.win, BROWN, rect)
 
-        # Texte centré dans le bouton
         text_surface_reset, text_rect = self.font.render("RECOMMENCER", (0, 0, 0))
         text_rect.center = rect.center
         self.win.blit(text_surface_reset, text_rect)
@@ -104,12 +111,10 @@ class Game:
         base_x = GXOFFSET + GCOLS * SQUARE_SIZE + 80
         base_y = 160
 
-        # Joueur 1
         self.win.blit(self.avatar1, (base_x, base_y))
         text_surface1, _ = self.font.render(self.__get_player1(), (150, 200, 255) if self.turn else (255, 255, 255))
         self.win.blit(text_surface1, (base_x + 70, base_y + 15))
 
-        # Joueur 2
         self.win.blit(self.avatar2, (base_x, base_y + 100))
         text_surface2, _ = self.font.render(self.__get_player2(), (255, 255, 255) if self.turn else (255, 180, 150))
         self.win.blit(text_surface2, (base_x + 70, base_y + 115))
@@ -125,7 +130,9 @@ class Game:
         return None
 
     def is_human_turn(self):
-        return True
+        if (self.turn and isinstance(self.player1, Human)) or (not self.turn and isinstance(self.player2, Human)):
+            return True
+        return False
 
     def end_turn(self, selected_square=None):
         self.storage_board.selected_square = selected_square

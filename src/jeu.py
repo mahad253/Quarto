@@ -26,28 +26,34 @@ GAME_FONT = freetype.SysFont(FONT, 24)
 # FPS
 fps = 60
 
-
 def main():
     run = True
     clock = pg.time.Clock()
-    game = Game(win, GAME_FONT)
 
-    # Debug console
+    # Récupérer le niveau d'IA depuis les arguments (sys.argv)
+    ia_level = None
+    if len(sys.argv) > 1:
+        ia_level = sys.argv[1]
+        print(f"🎮 Mode IA sélectionné : {ia_level}")
+
+    # Initialiser la partie avec ou sans IA
+    game = Game(win, GAME_FONT, ia_level=ia_level)
+
     print(game.game_board.__repr__())
     print(game.storage_board.__repr__())
 
     while run:
         clock.tick(fps)
 
-        # Dessin du fond d'écran
+        # Fond d'écran
         if background:
             win.blit(background, (0, 0))
         else:
-            win.fill((73, 67, 54))  # fallback au BG si image absente
+            win.fill((73, 67, 54))
 
         if not game.winner():
             if not game.is_human_turn():
-                game.select()  # IA si besoin
+                game.select()  # IA agit ici automatiquement
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -65,24 +71,20 @@ def main():
                     if (row, col) != (-1, -1) and game.is_human_turn():
                         game.select(row, col)
                         print(game.__repr__())
-
         else:
-            # Affiche le bouton "RESET"
+            # Si la partie est finie
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     run = False
                 if event.type == pg.MOUSEBUTTONDOWN:
                     pos = pg.mouse.get_pos()
-                    print("Click:", pos)
                     if game.is_reset_clicked(pos):
                         game.reset()
 
-        # Mise à jour des composants du jeu
         game.update()
 
     pg.quit()
     sys.exit()
-
 
 if __name__ == '__main__':
     main()
