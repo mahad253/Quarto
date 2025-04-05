@@ -122,4 +122,16 @@ while running:
 
             elif report_button.collidepoint(event.pos):
                 print("Affichage du rapport du projet...")
-                # Tu pourras ajouter ici ton système de lecture PDF ou HTML
+                # On remonte d’un niveau depuis src/ pour atteindre Quarto.pdf
+                pdf_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Quarto.pdf"))
+                try:
+                    if sys.platform.startswith("linux"):
+                        subprocess.run(["xdg-open", pdf_path])
+                    elif sys.platform == "darwin":
+                        subprocess.run(["open", pdf_path])
+                    elif sys.platform == "win32":
+                        os.startfile(pdf_path)
+                except Exception as e:
+                    print("Erreur lors de l’ouverture du PDF :", e)
+
+
