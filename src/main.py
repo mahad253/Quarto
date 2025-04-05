@@ -121,7 +121,7 @@ while running:
             if start_button.collidepoint(event.pos):
                 print("Lancement de la partie...")
                 pygame.quit()  # Fermer la fenêtre du menu
-                subprocess.run(["python", os.path.join(os.path.dirname(__file__), "jeu.py")])  # Ouvrir party.py
+                subprocess.run(["python", os.path.join(os.path.dirname(__file__), "choix.py")])  # Ouvrir party.py
                 sys.exit()  # Quitter proprement
             elif rules_button.collidepoint(event.pos):
                 print("Afficher les règles")
