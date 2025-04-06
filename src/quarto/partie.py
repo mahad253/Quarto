@@ -93,7 +93,7 @@ class Game:
         if self.winner():
             txt = "Égalité ! Personne n’a gagné." if self.winner() == TIE else f"{self.__get_player1() if self.turn else self.__get_player2()} a gagné !!"
         else:
-            txt = f"{self.__get_player1() if self.turn else self.__get_player2()}, {'choisis une' if self.pick else 'pose la'} pièce !"
+            txt = f"{self.__get_player1() if self.turn else self.__get_player2()} : {'choisis une' if self.pick else 'pose la'} pièce !"
 
         text_surface = self.large_font.render(txt, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=(self.win.get_width() // 2, 40))
