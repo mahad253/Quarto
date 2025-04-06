@@ -16,14 +16,18 @@ from .constants import (
 
 class Game:
     def __init__(self, win, font, ia_level=None):
-        self.ia_level = ia_level  # "Niveau 1", "Niveau 2", "Minimax" ou None
+        self.ia_level = ia_level
         self.__init_game()
         self.win = win
         self.font = font
         self.large_font = pg.font.Font(None, 60)
 
-        self.avatar1 = pg.transform.scale(pg.image.load(os.path.join("assets", "images", "user.png")), (60, 60))
-        self.avatar2 = pg.transform.scale(pg.image.load(os.path.join("assets", "images", "user.png")), (60, 60))
+        # Chargement des avatars selon type de joueur
+        user_avatar = pg.transform.scale(pg.image.load(os.path.join("assets", "images", "user.png")), (60, 60))
+        robot_avatar = pg.transform.scale(pg.image.load(os.path.join("assets", "images", "robot.png")), (60, 60))
+
+        self.avatar1 = robot_avatar if not isinstance(self.player1, Human) else user_avatar
+        self.avatar2 = robot_avatar if not isinstance(self.player2, Human) else user_avatar
 
     def update(self):
         self.game_board.draw(self.win)
