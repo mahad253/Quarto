@@ -1,35 +1,27 @@
 import itertools
-
 import pygame as pg
 from .constants import DBROWN, SQUARE_SIZE
 from .pieces.piece import Piece
 from .pieces.types import Coloration, Hole, Shape, Size
 
-
 class Board:
 
     def __init__(self, name, storage, rows, cols, x_offset, y_offset, board_outline, light_color, dark_color):
-
         self.__name__ = name
         self.storage = storage
-        self.board = [[0 for _ in range(cols)] for _ in range(rows)]  # _ is a standard placeholder to ignore the warning
-
+        self.board = [[0 for _ in range(cols)] for _ in range(rows)]
         self.pieces_count = 0
         self.rows = rows
         self.cols = cols
-
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.board_outline = board_outline
-
         self.__colors = (light_color, dark_color)
         self.__init_pieces()
-
         self.selected_square = None
 
     def __init_pieces(self):
-
-        if(self.storage):
+        if self.storage:
             row = 0
             for c in Coloration:
                 col = 0
@@ -39,161 +31,149 @@ class Board:
                             self.board[row][col] = Piece(row, col, c, sh, si, h)
                             col += 1
                 row += 1
-        # Represent the storage board in the terminal
         print("Initialization:")
         print(self.__repr__())
 
     def get_piece(self, row, col):
-        return(self.board[row][col])
+        return self.board[row][col]
 
     def put_piece(self, piece, row, col):
-
         self.board[row][col] = piece
         piece.move_to_gameboard(row, col)
 
     def move_to_gameboard(self, game_board, piece, row, col):
-
         try:
             self.board[piece.row][piece.col] = 0
             game_board.put_piece(piece, row, col)
-            return(piece)
+            return piece
         except AttributeError:
             print("Type not valid.")
 
-    def get_row_col_from_mouse(self, pos):  # returns a row, a col or false
-
+    def get_row_col_from_mouse(self, pos):
         x, y = pos
-        if((x < (self.x_offset + self.cols * SQUARE_SIZE)) &
-                (x > self.x_offset) &
-                (y < self.y_offset + self.rows * SQUARE_SIZE) &
-                (y > self.y_offset)):
+        if (x < self.x_offset + self.cols * SQUARE_SIZE and x > self.x_offset and
+                y < self.y_offset + self.rows * SQUARE_SIZE and y > self.y_offset):
             row = (y - self.y_offset) // SQUARE_SIZE
             col = (x - self.x_offset) // SQUARE_SIZE
-            print('Clicked cell: ' + self.__name__ + "[" + str(row) + "," + str(col) + "]")
-            return((row, col))
-        else:
-            return(-1, -1)
+            print(f'Clicked cell: {self.__name__}[{row},{col}]')
+            return row, col
+        return -1, -1
 
     def winner(self):
+        return (self.__check_all_lines() or self.__check_small_squares() or
+                self.__check_large_squares() or self.__check_rotated_squares())
 
+    def get_winning_level(self):
         if self.__check_all_lines():
+            return 1
+        elif self.__check_small_squares():
+            return 2
+        elif self.__check_large_squares():
+            return 3
+        elif self.__check_rotated_squares():
+            return 4
+        else:
+            return None
+
+    def is_full(self):
+        return all(piece != 0 for row in self.board for piece in row)
+
+    def __is_winning_line(self, pieces):
+        if 0 in pieces:
+            return False
+        attrs = [all(getattr(pieces[0], attr) == getattr(p, attr) for p in pieces)
+                 for attr in ("hole", "size", "shape", "coloration")]
+        return any(attrs)
+
+    def __check_all_lines(self):
+        for row in self.board:
+            if self.__is_winning_line(row):
+                return True
+        for col in range(self.cols):
+            if self.__is_winning_line([self.board[row][col] for row in range(self.rows)]):
+                return True
+        if self.__is_winning_line([self.board[i][i] for i in range(self.cols)]):
+            return True
+        if self.__is_winning_line([self.board[i][self.cols - i - 1] for i in range(self.cols)]):
             return True
         return False
 
-    def is_full(self):
+    def __check_small_squares(self):
+        for r in range(self.rows - 1):
+            for c in range(self.cols - 1):
+                square = [self.board[r][c], self.board[r][c+1],
+                          self.board[r+1][c], self.board[r+1][c+1]]
+                if self.__is_winning_line(square):
+                    return True
+        return False
 
-        for row in range(self.rows):
-            if 0 in self.board[row]:
-                return False
-        return True
+    def __check_large_squares(self):
+        for r in range(self.rows - 2):
+            for c in range(self.cols - 2):
+                square = [self.board[r][c], self.board[r][c+2],
+                          self.board[r+2][c], self.board[r+2][c+2]]
+                if self.__is_winning_line(square):
+                    return True
+        return False
 
-    def __is_winning_line(self, pieces):
-
-        if 0 in pieces:
-            return False
-        p = pieces[0]
-        ho, si, sh, co = True, True, True, True
-        for piece in pieces:
-            ho = (p.hole == piece.hole and ho)
-            si = (p.size == piece.size and si)
-            sh = (p.shape == piece.shape and sh)
-            co = (p.coloration == piece.coloration and co)
-        return(ho or si or sh or co)
-
-    def __check_all_lines(self):
-
-        for row in range(self.rows):  # checks every line
-            if not(0 in self.board[row]):
-                if self.__is_winning_line(self.board[row]):
-                    return(True)
-
-        for col in range(self.cols):  # check every cols
-            pieces = []
-            for row in range(self.rows):
-                pieces.append(self.board[row][col])
-            if not(0 in pieces):
-                if self.__is_winning_line(pieces):
-                    return(True)
-
-        if(self.cols == self.rows):  # if we have a square board
-            pieces = []
-            pieces2 = []
-            for col in range(self.cols):  # check all diagonals
-                pieces.append(self.board[col][col])
-                pieces2.append(self.board[col][self.cols - col - 1])
-            if not(0 in pieces):
-                if self.__is_winning_line(pieces):
-                    return(True)
-            if not(0 in pieces2):
-                if self.__is_winning_line(pieces2):
-                    return(True)
+    def __check_rotated_squares(self):
+        rotated_patterns = [
+            [(0, 1), (1, 0), (2, 1), (1, 2)],
+            [(0, 1), (2, 0), (3, 2), (1, 3)]
+        ]
+        for i in range(self.rows):
+            for j in range(self.cols):
+                for pattern in rotated_patterns:
+                    try:
+                        pieces = [self.board[i + dx][j + dy] for dx, dy in pattern]
+                        if self.__is_winning_line(pieces):
+                            return True
+                    except IndexError:
+                        continue
+        return False
 
     def get_valid_moves(self, verbose=False):
-
-        m = ""
-        moves = []
-        for row in range(self.rows):
-            for col in range(self.cols):
-                piece = self.get_piece(row, col)
-                if not self.storage:
-                    if piece == 0:
-                        moves.append((row, col))
-                        m += str((row, col)) + ", "
-                else:
-                    if piece != 0:
-                        moves.append((row, col))
-                        m += str((row, col)) + ", "
-        # Represents the moves on the terminal
+        moves = [(row, col) for row in range(self.rows)
+                 for col in range(self.cols)
+                 if (self.board[row][col] == 0 if not self.storage else self.board[row][col] != 0)]
         if verbose:
-            print("moves = [" + m + "]")
+            print("moves = [" + ", ".join(map(str, moves)) + "]")
         return moves
 
     def draw(self, win):
-
         self.__draw_cells(win)
-        for row in range(self.rows):
-            for col in range(self.cols):
-                if(self.board[row][col] != 0):
-                    piece = self.board[row][col]
+        for row in self.board:
+            for piece in row:
+                if piece != 0:
                     piece.draw(win)
 
     def __draw_cells(self, win):
-
-        rect = (self.x_offset - self.board_outline,
-                self.y_offset - self.board_outline,
-                SQUARE_SIZE * self.cols + 2 * self.board_outline,
-                SQUARE_SIZE * self.rows + 2 * self.board_outline)
-
-        pg.draw.rect(win, DBROWN, rect)
+        pg.draw.rect(win, DBROWN, (self.x_offset - self.board_outline, self.y_offset - self.board_outline,
+                                   SQUARE_SIZE * self.cols + 2 * self.board_outline,
+                                   SQUARE_SIZE * self.rows + 2 * self.board_outline))
         iter_colors = itertools.cycle(self.__colors)
 
         for x in range(self.cols):
             for y in range(self.rows):
-                rect = (x * SQUARE_SIZE + self.x_offset,
-                        y * SQUARE_SIZE + self.y_offset,
+                rect = (x * SQUARE_SIZE + self.x_offset, y * SQUARE_SIZE + self.y_offset,
                         SQUARE_SIZE, SQUARE_SIZE)
-                if self.selected_square != (x, y):
-                    pg.draw.rect(win, next(iter_colors), rect)
-                else:
+                color = next(iter_colors)
+                if self.selected_square == (x, y):
                     pg.draw.rect(win, DBROWN, rect)
-                    next(iter_colors)
+                else:
+                    pg.draw.rect(win, color, rect)
             next(iter_colors)
 
-    def __repr__(self):
 
-        s = self.__name__ + ":\n"
-        for x in range(self.rows):
-            for y in range(self.cols):
-                s += ((str(self.board[x][y]) + " ") if(self.board[x][y]) != 0 else "---- ")
-            s += '\n'
-        return(s)
+
+    def __repr__(self):
+        return self.__name__ + ":\n" + "\n".join(
+            " ".join(str(cell) if cell != 0 else "----" for cell in row) for row in self.board
+        )
 
     def display(self, depth):
-
-        s = "\t" * abs(2 - depth) + self.__name__ + ":\n"
-        for x in range(self.rows):
-            s += "\t" * abs(2 - depth)
-            for y in range(self.cols):
-                s += ((str(self.board[x][y]) + " ") if(self.board[x][y]) != 0 else "---- ")
-            s += '\n'
-        return(s)
+        tab = "\t" * abs(2 - depth)
+        return tab + self.__name__ + ":\n" + "\n".join(
+            tab + " ".join(str(cell) if cell != 0 else "----" for cell in row)
+            for row in self.board
+        )

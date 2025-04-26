@@ -29,6 +29,10 @@ class Game:
         self.avatar1 = robot_avatar if not isinstance(self.player1, Human) else user_avatar
         self.avatar2 = robot_avatar if not isinstance(self.player2, Human) else user_avatar
 
+        # Chargement du son de victoire
+        self.victory_sound = pg.mixer.Sound(os.path.join("assets", "sounds", "victory.wav"))
+        self.sound_played = False
+
     def update(self):
         self.game_board.draw(self.win)
         self.storage_board.draw(self.win)
@@ -57,6 +61,8 @@ class Game:
 
     def reset(self):
         print("La partie est réinitialisée.")
+        self.victory_sound.stop()  # 🔇 Arrête le son
+        self.sound_played = False  # Réinitialise le drapeau
         self.__init_game()
         print(self)
 
@@ -68,9 +74,15 @@ class Game:
 
     def winner(self):
         if self.game_board.winner():
+            if not self.sound_played:
+                self.victory_sound.play()
+                self.sound_played = True
             self.__draw_reset_button()
             return self.__get_player1() if self.turn else self.__get_player2()
         elif self.game_board.is_full():
+            if not self.sound_played:
+                self.victory_sound.play()
+                self.sound_played = True
             self.__draw_reset_button()
             return TIE
         return None
@@ -90,14 +102,23 @@ class Game:
                             self.game_board.y_offset + int(SQUARE_SIZE * row) + SQUARE_SIZE // 2), 15)
 
     def __draw_turn_txt(self):
-        if self.winner():
-            txt = "Égalité ! Personne n’a gagné." if self.winner() == TIE else f"{self.__get_player1() if self.turn else self.__get_player2()} a gagné !!"
+        winner = self.winner()
+        if winner:
+            if winner == TIE:
+                txt = "Égalité ! Personne n’a gagné."
+            else:
+                level = self.game_board.get_winning_level()
+                if level:
+                    txt = f"{winner} a gagné (Niveau {level}) !"
+                else:
+                    txt = f"{winner} a gagné (Niveau inconnu) !"
         else:
             txt = f"{self.__get_player1() if self.turn else self.__get_player2()} : {'choisis une' if self.pick else 'pose la'} pièce !"
 
         text_surface = self.large_font.render(txt, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=(self.win.get_width() // 2, 40))
         self.win.blit(text_surface, text_rect)
+
 
     def __draw_reset_button(self):
         rect_outline = pg.Rect(RESET_X - BOARDOUTLINE, RESET_Y - BOARDOUTLINE,
