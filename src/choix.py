@@ -73,7 +73,7 @@ class Dropdown:
 # Création des boutons
 btn_pvp = Button("Joueur vs Joueur", LARGEUR // 2 - 150, 200)
 btn_pvai = Button("Joueur vs IA", LARGEUR // 2 - 150, 300)
-dropdown = Dropdown(LARGEUR // 2 - 150, 300, ["Alpha-Bêta", "SSS*", "Minimax"])
+dropdown = Dropdown(LARGEUR // 2 - 150, 300, ["Niveau 1", "Niveau 2", "Minimax"])
 
 # Boucle principale
 running = True
