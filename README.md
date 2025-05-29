@@ -8,7 +8,7 @@ Ce projet est une implémentation interactive et ludique du jeu de société **Q
 
 - ✅ **Modes de jeu** :
     - Joueur vs Joueur
-    - Joueur vs IA (Niveau 1, 2, Minimax)
+    - Joueur vs IA (Alpha-Bêta, SSS*, Minimax)
 - 🧠 **IA intégrée** :
     - Niveau 1 : aléatoire
     - Niveau 2 : stratégie opportuniste

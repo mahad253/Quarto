@@ -50,10 +50,10 @@ class Game:
 
         self.player1 = Human("Joueur 1")
 
-        if self.ia_level == "Niveau 1":
-            self.player2 = AI_level1("IA - Niveau 1")
-        elif self.ia_level == "Niveau 2":
-            self.player2 = AI_level2("IA - Niveau 2")
+        if self.ia_level == "Alpha-Bêta":
+            self.player2 = AI_level1("IA - Alpha-Bêta")
+        elif self.ia_level == "SSS*":
+            self.player2 = AI_level2("IA - SSS*")
         elif self.ia_level == "Minimax":
             self.player2 = AI_level3("IA - Minimax")
         else:
